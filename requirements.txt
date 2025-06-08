@@ -2,4 +2,4 @@ discord.py
 python-dotenv
 requests
 langchain
-openai
+langchain_openai
