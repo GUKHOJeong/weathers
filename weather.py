@@ -6,7 +6,6 @@ import requests
 from langchain_core.prompts import PromptTemplate, ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain_core.output_parsers import StrOutputParser
-import asyncio
 
 # .env에서 토큰 로드
 load_dotenv()
@@ -91,26 +90,14 @@ async def recommend_activity(ctx):
     )
     prompt = ChatPromptTemplate.from_messages(template)
     chain = prompt | llm | StrOutputParser()
-    try:
-        # 스트리밍 메시지 초기화
-        msg = await ctx.send("💡 추천을 생성 중입니다...")
-
-        final_output = ""
-        async for chunk in chain.astream({"prompt": prompts}):
-            final_output += chunk
-            await msg.edit(content=f"{ctx.author.mention} {final_output}")
-            await asyncio.sleep(0.03)
-
-    except Exception as e:
-        # 스트리밍 실패 시 fallback: invoke + send 분할
-        result = chain.invoke({"prompt": prompts})
-        MAX_LENGTH = 1500
-        for i in range(0, len(result), MAX_LENGTH):
-            chunk = result[i : i + MAX_LENGTH]
-            if i == 0:
-                await ctx.send(f"{ctx.author.mention}{chunk}")
-            else:
-                await ctx.send(chunk)
+    result = chain.invoke({"prompt": prompts})
+    MAX_LENGTH = 1500
+    for i in range(0, len(result), MAX_LENGTH):
+        chunk = result[i : i + MAX_LENGTH]
+        if i == 0:
+            await ctx.send(f"{ctx.author.mention}{chunk}")
+        else:
+            await ctx.send(chunk)
 
 
 bot.run(weather_token)
