@@ -13,13 +13,13 @@ weather_token = os.getenv("weather_token")
 weather_api = os.getenv("weathers_api")
 
 llm = ChatOpenAI(
-    temperature=0.3,  # 창의성 (0.0 ~ 2.0)
+    temperature=0.5,  # 창의성 (0.0 ~ 2.0)
     model_name="gpt-4.1-nano",  # 모델명
 )
 template = [
     (
         "system",
-        "당신은 친절한 날씨에 따른 하루 일과 추천을 해주는 천재 AI입니다. 당신의 이름은 국멘_오늘은 뭐해요? 입니다. 어떤 언어로 질문하더라도 항상 한국어로 정중하게 답변하세요",
+        "당신은 당신은 여행 및 라이프스타일 전문가입니다. 당신의 이름은 국멘_오늘은 뭐해요? 입니다. 날씨와 지역 정보를 바탕으로 활동을 추천해 주세요",
     ),
     ("human", "{prompt}"),
 ]
@@ -86,6 +86,7 @@ async def recommend_activity(ctx):
         f"체감 온도는 {data['feel_temp']}도이며, 날씨는 '{data['description']}'이고 "
         f"습도는 {data['humid']}%, 바람은 {data['wind_speed']}m/s입니다. "
         f"{'비가 오고 있습니다.' if data['rain'] > 0 else '비는 오지 않습니다.'} "
+        f"{data['region']} 지역의 특색 있는 장소나 활동을 포함하여, "
         f"이런 날씨에 적절한 하루 활동을 한국어로 추천해 주세요."
     )
     prompt = ChatPromptTemplate.from_messages(template)
@@ -94,10 +95,7 @@ async def recommend_activity(ctx):
     MAX_LENGTH = 1500
     for i in range(0, len(result), MAX_LENGTH):
         chunk = result[i : i + MAX_LENGTH]
-        if i == 0:
-            await ctx.send(f"{ctx.author.mention}{chunk}")
-        else:
-            await ctx.send(chunk)
+        await ctx.send(f"{ctx.author.mention}{chunk}")
 
 
 bot.run(weather_token)
